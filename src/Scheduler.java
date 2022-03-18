@@ -6,7 +6,7 @@ import java.util.Scanner;
 
 public class Scheduler {
     private static final Scanner scan = new Scanner(System.in);
-    private final ArrayList<Appointment> appointments = new ArrayList<>();
+    private ArrayList<Appointment> appointments = new ArrayList<>();
 
     private final int SAVE_APPOINTMENT = 1;
     private final int DELETE_APPOINTMENT = 2;
@@ -147,91 +147,34 @@ public class Scheduler {
         }
     }
     private boolean saveAppointmentsToFile(ArrayList<Appointment> apts, String saveFile) {
-        try {
-            FileWriter fileWriter = new FileWriter(saveFile, true);
-            PrintWriter out = new PrintWriter(fileWriter);
-            for (Appointment element : apts) {
-                out.println(element.toString());
-            }
-            out.close();
+        File f = new File(saveFile);
+        try (ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(f))){
+            out.writeObject(apts);
             return true;
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
-
         }
         return false;
     }
+
     private boolean loadAppointmentsFromFile( String sourceFile, ArrayList<Appointment> apts) {
-        ArrayList<String> months = new ArrayList<>();
-        months.add("Jan");
-        months.add("Feb");
-        months.add("Mar");
-        months.add("April");
-        months.add("May");
-        months.add("June");
-        months.add("July");
-        months.add("Aug");
-        months.add("Sept");
-        months.add("Oct");
-        months.add("Nov");
-        months.add("Dec");
+        File f = new File(sourceFile);
+        if (f.exists()) {
+            try (ObjectInputStream in = new ObjectInputStream(new FileInputStream(f))) {
+                apts = (ArrayList<Appointment>) in.readObject();
+                setAppointments(apts);
+                return true;
 
-       try {
-           File inputFile = new File(sourceFile);
-           Scanner in = new Scanner(inputFile);
-           boolean done = false;
-           while (!done) {
-               if (in.hasNextLine()) {
-                   String cal = in.nextLine();
-                   String fullName = in.nextLine();
-                   String phoneString = in.nextLine();
-                   String category = in.nextLine();
-                   String description = in.nextLine().trim();
-                   in.nextLine();
+            } catch (FileNotFoundException | ClassNotFoundException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+            return false;
 
-                   String month = cal.split(" ")[1];
-                   int date = Integer.parseInt(cal.split(" ")[2]);
-                   int time = processTimeString(cal.split(" ")[3]);
-                   int year = Integer.parseInt(cal.split(" ")[5]);
-                   String firstName = fullName.split(" ")[0];
-                   String lastName = fullName.split(" ")[1];
-
-
-                   int monthNumber = 0;
-                   for (String element : months) {
-                       if (element.equals(month)) {
-                           monthNumber = months.indexOf(element);
-                       }
-                   }
-                   Calendar newCal = Calendar.getInstance();
-                   newCal.clear();
-                   newCal.set(year, monthNumber, date, time, 0);
-
-                   int areaCode = Integer.parseInt(phoneString.substring(1, 4));
-                   int prefix = Integer.parseInt(phoneString.substring(5, 8));
-                   int linenumber = Integer.parseInt(phoneString.substring(9,13));
-                   TelephoneNumber phone = new TelephoneNumber();
-                   phone.setAreaCode(areaCode);
-                   phone.setPrefix(prefix);
-                   phone.setLineNumber(linenumber);
-
-                   Activity activity = new Activity();
-                   activity.setCategory(category);
-                   activity.setDescriptionOfWork(description);
-
-                   Appointment apt = new Appointment(newCal, firstName, lastName, phone, activity);
-                   apts.add(apt);
-               }
-               else {
-                   in.close();
-                   done = true;
-               }
-           }
-           return true;
-       } catch (FileNotFoundException e) {
-           e.printStackTrace();
-           return false;
-       }
     }
 
     public static String getResponseTo(String s) {
@@ -303,6 +246,9 @@ public class Scheduler {
 
     private ArrayList<Appointment> getAppointments() {
         return this.appointments;
+    }
+    private void setAppointments(ArrayList<Appointment> apts) {
+        this.appointments = apts;
     }
 }
 
