@@ -1,10 +1,13 @@
+import java.io.Serializable;
 
-
-public class Activity {
+public class Activity implements Serializable {
     private String descriptionOfWork;
     private String category;
 
-    public Activity() {}
+    public Activity(String category, String descriptionOfWork) {
+        setCategory(category);
+        setDescriptionOfWork(descriptionOfWork);
+    }
 
     public void setDescriptionOfWork(String descriptionOfWork) {
         this.descriptionOfWork = descriptionOfWork;
