@@ -1,4 +1,4 @@
-import java.util.Calendar;
+
 import java.util.Comparator;
 
 public class SortAppointmentByCalendar implements Comparator<Appointment>{
